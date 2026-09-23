@@ -1,0 +1,1689 @@
+<html lang="zh-CN" data-trae-theme="light"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>免费古籍在线查阅指南</title>
+<style>
+  :root {
+    --bg: #f5f0e6;
+    --card-bg: #fffdf8;
+    --primary: #8b5a2b;
+    --primary-light: #c49a6c;
+    --accent: #c0392b;
+    --text: #3a3226;
+    --text-light: #7a6e5d;
+    --border: #d9cdb8;
+    --shadow: 0 2px 12px rgba(139,90,43,0.1);
+    --shadow-hover: 0 6px 24px rgba(139,90,43,0.18);
+    --tag-bg: #f0e8d9;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: "Noto Serif SC", "Songti SC", "SimSun", "Georgia", serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  /* ===== Header ===== */
+  header {
+    background: linear-gradient(135deg, #6b4423 0%, #8b5a2b 50%, #a0703c 100%);
+    color: #f5f0e6;
+    padding: 60px 20px 50px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  header::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Ctext x='10' y='30' font-size='20'%3E書%3C/text%3E%3Ctext x='50' y='70' font-size='20'%3E典%3C/text%3E%3Ctext x='80' y='40' font-size='20'%3E經%3C/text%3E%3C/g%3E%3C/svg%3E");
+    pointer-events: none;
+  }
+
+  header h1 {
+    font-size: 2.4em;
+    font-weight: 700;
+    letter-spacing: 6px;
+    margin-bottom: 12px;
+    position: relative;
+  }
+
+  header .subtitle {
+    font-size: 1.05em;
+    opacity: 0.85;
+    letter-spacing: 2px;
+    position: relative;
+  }
+
+  header .stats {
+    margin-top: 24px;
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    flex-wrap: wrap;
+    position: relative;
+  }
+
+  header .stat-item {
+    text-align: center;
+  }
+
+  header .stat-num {
+    font-size: 1.8em;
+    font-weight: 700;
+    color: #f0d9a0;
+  }
+
+  header .stat-label {
+    font-size: 0.8em;
+    opacity: 0.7;
+    letter-spacing: 1px;
+  }
+
+  /* ===== Search Bar ===== */
+  .search-bar {
+    max-width: 700px;
+    margin: -25px auto 0;
+    padding: 0 20px;
+    position: relative;
+    z-index: 10;
+  }
+
+  .search-bar input {
+    width: 100%;
+    padding: 14px 24px 14px 50px;
+    border: 2px solid var(--border);
+    border-radius: 30px;
+    font-size: 1em;
+    font-family: inherit;
+    background: var(--card-bg);
+    color: var(--text);
+    box-shadow: var(--shadow);
+    outline: none;
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
+
+  .search-bar input:focus {
+    border-color: var(--primary);
+    box-shadow: var(--shadow-hover);
+  }
+
+  .search-bar .icon {
+    position: absolute;
+    left: 42px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.2em;
+    color: var(--text-light);
+  }
+
+  /* ===== Filter Tags ===== */
+  .filter-tags {
+    max-width: 1200px;
+    margin: 24px auto 0;
+    padding: 0 20px;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .filter-tag {
+    padding: 6px 18px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    cursor: pointer;
+    border: 1.5px solid var(--border);
+    background: var(--card-bg);
+    color: var(--text-light);
+    transition: all 0.3s;
+    user-select: none;
+  }
+
+  .filter-tag:hover {
+    border-color: var(--primary-light);
+    color: var(--primary);
+  }
+
+  .filter-tag.active {
+    background: var(--primary);
+    color: #fff;
+    border-color: var(--primary);
+  }
+
+  /* ===== Main Content ===== */
+  main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 20px 60px;
+  }
+
+  .category {
+    margin-bottom: 48px;
+  }
+
+  .category-title {
+    font-size: 1.4em;
+    color: var(--primary);
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 10px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .category-title .icon {
+    font-size: 1.1em;
+  }
+
+  .category-title .count {
+    font-size: 0.65em;
+    color: var(--text-light);
+    background: var(--tag-bg);
+    padding: 2px 10px;
+    border-radius: 10px;
+    margin-left: auto;
+  }
+
+  /* ===== Cards Grid ===== */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 20px;
+  }
+
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: var(--shadow);
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--primary);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-hover);
+    border-color: var(--primary-light);
+  }
+
+  .card:hover::before {
+    opacity: 1;
+  }
+
+  .card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    gap: 10px;
+  }
+
+  .card-name {
+    font-size: 1.15em;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.4;
+  }
+
+  .card-badges {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .badge {
+    font-size: 0.7em;
+    padding: 2px 8px;
+    border-radius: 10px;
+    white-space: nowrap;
+  }
+
+  .badge-free {
+    background: #e8f5e9;
+    color: #2e7d32;
+  }
+
+  .badge-hot {
+    background: #fbe9e7;
+    color: #c62828;
+  }
+
+  .badge-register {
+    background: #fff3e0;
+    color: #e65100;
+  }
+
+  .card-desc {
+    font-size: 0.9em;
+    color: var(--text-light);
+    line-height: 1.7;
+    margin-bottom: 14px;
+    flex-grow: 1;
+  }
+
+  .card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 14px;
+  }
+
+  .meta-tag {
+    font-size: 0.75em;
+    padding: 3px 10px;
+    background: var(--tag-bg);
+    border-radius: 6px;
+    color: var(--text-light);
+  }
+
+  .card-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+    color: var(--primary);
+    font-size: 0.9em;
+    font-weight: 600;
+    padding: 8px 0;
+    border-bottom: 1.5px solid transparent;
+    transition: border-color 0.3s;
+    word-break: break-all;
+  }
+
+  .card-link:hover {
+    border-bottom-color: var(--primary);
+  }
+
+  .card-link .arrow {
+    transition: transform 0.3s;
+  }
+
+  .card-link:hover .arrow {
+    transform: translateX(4px);
+  }
+
+  /* ===== No Results ===== */
+  .no-results {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-light);
+    font-size: 1.1em;
+    display: none;
+  }
+
+  /* ===== Footer ===== */
+  footer {
+    background: #3a3226;
+    color: #b0a690;
+    text-align: center;
+    padding: 30px 20px;
+    font-size: 0.85em;
+    letter-spacing: 1px;
+  }
+
+  footer a {
+    color: var(--primary-light);
+    text-decoration: none;
+  }
+
+  /* ===== Responsive ===== */
+  @media (max-width: 600px) {
+    header h1 { font-size: 1.8em; letter-spacing: 3px; }
+    header .stats { gap: 20px; }
+    .cards-grid { grid-template-columns: 1fr; }
+    .card { padding: 18px; }
+  }
+
+  /* ===== Animations ===== */
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .card {
+    animation: fadeInUp 0.5s ease forwards;
+    opacity: 0;
+  }
+
+  .card:nth-child(1) { animation-delay: 0.05s; }
+  .card:nth-child(2) { animation-delay: 0.1s; }
+  .card:nth-child(3) { animation-delay: 0.15s; }
+  .card:nth-child(4) { animation-delay: 0.2s; }
+  .card:nth-child(5) { animation-delay: 0.25s; }
+  .card:nth-child(6) { animation-delay: 0.3s; }
+</style>
+<style data-trae-edit-ui="true" id="trae-previewer-tools-styles">:root {
+  --trae-layer-image-download: 89990;
+  --trae-layer-browser-inspect-overlay: 90000;
+  --trae-layer-browser-inspect-highlight: 90010;
+  --trae-layer-browser-inspect-action: 90020;
+  --trae-layer-text-selection-action: 90030;
+  --trae-layer-edit-tooltip: 100095;
+}
+:root,
+[data-trae-theme='dark'] {
+  --trae-bg-base-default: #171717;
+  --trae-bg-menu: #222427;
+  --trae-bg-overlay-l1: rgba(255, 255, 255, 0.04);
+  --trae-bg-overlay-l2: rgba(255, 255, 255, 0.08);
+  --trae-bg-overlay-l3: rgba(255, 255, 255, 0.12);
+  --trae-bg-overlay-l4: rgba(255, 255, 255, 0.16);
+  --trae-bg-invert: #f5f9fe;
+  --trae-bg-invert-hover: #e8ecf0;
+  --trae-bg-invert-active: #dce0e4;
+  --trae-bg-invert-disabled: rgba(224, 226, 242, 0.12);
+  --bg-bg-brand-disabled: rgba(75, 63, 227, 0.35);
+  --bg-bg-brand-popup: rgba(106, 111, 255, 0.15);
+  --trae-border-l1: #e0e2f217;
+  --trae-border-l2: rgba(255, 255, 255, 0.12);
+  --trae-border-l3: rgba(255, 255, 255, 0.08);
+  --trae-border-neutral-l3: rgba(229, 229, 229, 0.20);
+  --trae-border-brand: #6a6fff;
+  --trae-text-default: #f5f9fe;
+  --trae-text-default-hover: #f5f9fe;
+  --trae-text-default-active: #f5f9fe;
+  --trae-text-secondary: rgba(245, 249, 254, 0.5);
+  --trae-text-tertiary: rgba(245, 249, 254, 0.4);
+  --trae-text-disabled: #666b75;
+  --trae-text-onaccent: #222427;
+  --trae-icon-default: #f5f9fe;
+  --trae-icon-secondary: rgba(245, 249, 254, 0.5);
+  --trae-icon-brand: #6a6fff;
+  --icon-icon-brand: var(--trae-icon-brand);
+  --trae-icon-onaccent: #222427;
+  --trae-status-success: #22c55e;
+  --trae-status-primary: #3b82f6;
+  --trae-status-primary-default: #387bff;
+  --trae-status-primary-surface-l1: rgba(53, 121, 255, 0.18);
+  --trae-status-success-default: #33c192;
+  --trae-status-success-surface-l1: rgba(0, 165, 110, 0.18);
+  --trae-status-error-default: #f65a5a;
+  --trae-status-error-surface-l1: rgba(246, 70, 70, 0.18);
+  --trae-annotation-marker-bg: #4b3fe3;
+  --trae-annotation-marker-text: #ffffff;
+  --trae-annotation-region-border: var(--trae-status-primary-default);
+  --trae-region-outside-mask-bg: rgba(0, 0, 0, 0.32);
+  --trae-panel-shadow: 0px 6px 24px -1px rgba(0, 0, 0, 0.16);
+  --trae-floating-shadow: 0px 2px 8px 0px rgba(0, 0, 0, 0.2);
+  --trae-shadow-elevation-50: 0 1px 2px -1px rgba(0, 0, 0, 0.45);
+  --text-text-default: var(--trae-text-default);
+  --text-text-onaccent: var(--trae-text-onaccent);
+  --bg-bg-menu: var(--trae-bg-menu);
+  --bg-bg-white: var(--trae-bg-menu);
+  --bg-bg-invert: var(--trae-bg-invert);
+  --bg-bg-invert-disabled: var(--trae-bg-invert-disabled);
+  --bg-bg-overlay-l1: var(--trae-bg-overlay-l1);
+  --bg-bg-overlay-l2: var(--trae-bg-overlay-l2);
+  --bg-bg-overlay-l3: var(--trae-bg-overlay-l3);
+  --border-border-neutral-l1: var(--trae-border-l1);
+  --border-border-brand: var(--trae-border-brand);
+  --border-border-brand-half: rgba(106, 111, 255, 0.4);
+  --status-error-default: var(--trae-status-error-default);
+  --status-error-surface-l1: var(--trae-status-error-surface-l1);
+  --radius-radius-md-12: 12px;
+  --spacers-spacer-0: 0;
+  --spacers-spacer-6: 6px;
+}
+
+[data-trae-theme='light'] {
+  --trae-bg-base-default: #fafafa;
+  --trae-bg-menu: #ffffff;
+  --trae-bg-overlay-l1: rgba(0, 0, 0, 0.04);
+  --trae-bg-overlay-l2: rgba(0, 0, 0, 0.06);
+  --trae-bg-overlay-l3: rgba(0, 0, 0, 0.08);
+  --trae-bg-overlay-l4: rgba(0, 0, 0, 0.12);
+  --trae-bg-invert: #1f2328;
+  --trae-bg-invert-hover: #32383f;
+  --trae-bg-invert-active: #444d56;
+  --trae-bg-invert-disabled: rgba(115, 115, 115, 0.20);
+  --bg-bg-brand-disabled: rgba(75, 63, 227, 0.22);
+  --bg-bg-brand-popup: rgba(170, 183, 255, 0.36);
+  --trae-border-l1: rgba(0, 0, 0, 0.1);
+  --trae-border-l2: rgba(0, 0, 0, 0.12);
+  --trae-border-l3: rgba(0, 0, 0, 0.08);
+  --trae-border-neutral-l3: rgba(115, 115, 115, 0.36);
+  --trae-border-brand: #4b3fe3;
+  --trae-text-default: #1f2328;
+  --trae-text-default-hover: #111214;
+  --trae-text-default-active: #111214;
+  --trae-text-secondary: rgba(31, 35, 40, 0.5);
+  --trae-text-tertiary: rgba(31, 35, 40, 0.4);
+  --trae-text-disabled: #a1a1a1;
+  --trae-text-onaccent: #ffffff;
+  --trae-icon-default: #1f2328;
+  --trae-icon-secondary: rgba(31, 35, 40, 0.5);
+  --trae-icon-brand: #4b3fe3;
+  --icon-icon-brand: var(--trae-icon-brand);
+  --trae-icon-onaccent: #ffffff;
+  --trae-status-success: #22c55e;
+  --trae-status-primary: #3b82f6;
+  --trae-status-primary-default: #2f74ff;
+  --trae-status-primary-surface-l1: rgba(47, 116, 255, 0.12);
+  --trae-status-success-default: #15a877;
+  --trae-status-success-surface-l1: rgba(64, 176, 139, 0.12);
+  --trae-status-error-default: #e8463a;
+  --trae-status-error-surface-l1: rgba(232, 70, 58, 0.12);
+  --trae-annotation-marker-bg: #4b3fe3;
+  --trae-annotation-marker-text: #ffffff;
+  --trae-annotation-region-border: var(--trae-status-primary-default);
+  --trae-region-outside-mask-bg: rgba(0, 0, 0, 0.18);
+  --trae-panel-shadow: 0px 6px 24px -1px rgba(24, 24, 24, 0.06);
+  --trae-floating-shadow: 0px 2px 8px 0px rgba(24, 24, 24, 0.2);
+  --trae-shadow-elevation-50: 0 1px 2px -1px rgba(24, 24, 24, 0.08);
+  --text-text-default: var(--trae-text-default);
+  --text-text-onaccent: var(--trae-text-onaccent);
+  --bg-bg-menu: var(--trae-bg-menu);
+  --bg-bg-white: var(--trae-bg-menu);
+  --bg-bg-invert: var(--trae-bg-invert);
+  --bg-bg-invert-disabled: var(--trae-bg-invert-disabled);
+  --bg-bg-overlay-l1: var(--trae-bg-overlay-l1);
+  --bg-bg-overlay-l2: var(--trae-bg-overlay-l2);
+  --bg-bg-overlay-l3: var(--trae-bg-overlay-l3);
+  --border-border-neutral-l1: var(--trae-border-l1);
+  --border-border-brand: var(--trae-border-brand);
+  --border-border-brand-half: rgba(75, 63, 227, 0.4);
+  --status-error-default: var(--trae-status-error-default);
+  --status-error-surface-l1: var(--trae-status-error-surface-l1);
+  --radius-radius-md-12: 12px;
+  --spacers-spacer-0: 0;
+  --spacers-spacer-6: 6px;
+}
+
+@keyframes trae-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes trae-edit-bar-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes trae-edit-bar-leave {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+}
+
+@keyframes trae-edit-panel-leave {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+}
+
+.trae-edit-mode-active:not(.trae-edit-mode-dragging) body *:not([data-trae-edit-ui]):not([data-trae-edit-ui] *) {
+  transition: none !important;
+  animation-play-state: paused !important;
+}
+
+.trae-edit-mode-reorder-hit-test [data-trae-edit-ui]:not(.trae-edit-pointer-shield):not(.trae-edit-panel),
+.trae-edit-mode-reorder-hit-test [data-trae-edit-ui]:not(.trae-edit-pointer-shield):not(.trae-edit-panel) * {
+  pointer-events: none !important;
+}
+
+.trae-browser-inspect-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: var(--trae-layer-browser-inspect-overlay);
+  pointer-events: auto;
+  background: transparent;
+}
+
+.trae-browser-inspect-highlight-box {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: var(--trae-layer-browser-inspect-highlight);
+  display: none;
+}
+
+.trae-browser-inspect-highlight-tag {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  height: 18px;
+  padding: 0 6px;
+  box-sizing: border-box;
+  border-radius: 4px;
+  background-color: var(--trae-status-success-default);
+  color: var(--trae-text-onaccent);
+  font-size: 12px;
+  font-weight: 400;
+  display: none;
+  align-items: center;
+  z-index: var(--trae-layer-browser-inspect-action);
+}
+
+.trae-browser-inspect-highlight-box-show {
+  display: flex;
+}
+
+.trae-browser-inspect-highlight-tag.trae-browser-inspect-highlight-box-show {
+  display: none;
+}
+
+.trae-browser-inspect-select-button.trae-browser-inspect-highlight-box-show {
+  display: block !important;
+}
+
+.trae-browser-inspect-select-button {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: none;
+  z-index: var(--trae-layer-browser-inspect-action);
+}
+
+.trae-browser-inspect-select-highlight-box {
+  background: transparent !important;
+}
+
+.trae-browser-inspect-select-highlight-box .trae-browser-inspect-highlight-tag {
+  background-color: var(--trae-status-success-default);
+}
+
+.trae-add-to-chat-card {
+  display: block;
+  overflow: hidden;
+  background: var(--trae-bg-menu);
+  border: 1px solid var(--trae-border-l1);
+  border-radius: 8px;
+  box-shadow: var(--trae-floating-shadow);
+  transition:
+    width 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    height 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.trae-add-to-chat-content {
+  position: relative;
+  width: max-content;
+}
+
+.trae-fade-exit {
+  opacity: 0;
+  transition: opacity 0.15s ease-out;
+}
+
+.trae-fade-enter {
+  opacity: 1;
+  transition: opacity 0.2s ease-in;
+}
+
+.trae-buttons-view {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px;
+  background: transparent;
+}
+
+.trae-action-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transform: none !important;
+  transition: none !important;
+  animation: none !important;
+}
+
+.trae-action-button:hover {
+  background: var(--trae-bg-overlay-l2);
+}
+
+.trae-action-button:active {
+  background: var(--trae-bg-overlay-l3);
+}
+
+.trae-action-button:focus-visible {
+  outline: 2px solid var(--trae-status-primary);
+  outline-offset: 1px;
+}
+
+.trae-action-button-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  color: var(--trae-icon-default);
+  flex-shrink: 0;
+}
+
+.trae-action-button-title {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 16px;
+  color: var(--trae-text-default);
+  white-space: nowrap;
+}
+
+.trae-edit-toolbar-button-active {
+  background: var(--bg-bg-brand-disabled, rgba(75, 63, 227, 0.22)) !important;
+  color: var(--icon-icon-brand, #4b3fe3) !important;
+  font-weight: bold !important;
+}
+
+.trae-edit-toolbar-button-active:hover {
+  background: var(--bg-bg-brand-popup, rgba(170, 183, 255, 0.36)) !important;
+}
+
+.trae-edit-toolbar button[data-action='alignment-dropdown']:hover,
+.trae-edit-toolbar button[data-action='text-align-dropdown']:hover,
+.trae-edit-toolbar button[data-action='font-decrease']:hover,
+.trae-edit-toolbar button[data-action='font-increase']:hover,
+.trae-edit-toolbar button[data-action^='align-']:hover {
+  border-radius: 8px;
+  background: var(--bg-bg-overlay-l1, rgba(115, 115, 115, 0.08)) !important;
+}
+
+.trae-edit-toolbar button[data-action='alignment-dropdown']:active,
+.trae-edit-toolbar button[data-action='text-align-dropdown']:active,
+.trae-edit-toolbar button[data-action='font-decrease']:active,
+.trae-edit-toolbar button[data-action='font-increase']:active,
+.trae-edit-toolbar button[data-action^='align-']:active {
+  border-radius: 8px;
+  background: var(--bg-bg-overlay-l2, rgba(115, 115, 115, 0.12)) !important;
+}
+
+.trae-comment-input {
+  background: transparent;
+  color: var(--trae-text-default);
+  caret-color: var(--trae-text-default);
+}
+
+.trae-comment-input::placeholder {
+  color: var(--trae-text-tertiary);
+}
+
+.trae-point-edit-bar,
+.trae-point-comment-input-bar,
+.trae-comment-only-panel {
+  transform-origin: top center;
+  will-change: opacity, transform;
+}
+
+.trae-edit-panel:not(.trae-edit-panel-leave) {
+  pointer-events: auto !important;
+}
+
+.trae-edit-bar-enter {
+  animation: trae-edit-bar-enter var(--transition-normal, 0.18s cubic-bezier(0.2, 0, 0, 1)) both;
+}
+
+.trae-edit-bar-leave {
+  pointer-events: none;
+  animation: trae-edit-bar-leave var(--transition-fast, 0.14s ease) both;
+}
+
+.trae-edit-panel-leave {
+  pointer-events: none;
+  animation: trae-edit-panel-leave var(--transition-fast, 0.14s ease) both;
+}
+
+.trae-edit-panel [data-trae-tooltip] {
+  position: relative;
+}
+
+.trae-edit-panel [data-trae-tooltip]::after {
+  content: attr(data-trae-tooltip);
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  z-index: var(--trae-layer-edit-tooltip);
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: var(--trae-bg-invert, var(--bg-bg-invert));
+  color: var(--trae-text-onaccent, var(--text-text-onaccent));
+  box-shadow: var(--trae-floating-shadow);
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'PingFang SC', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 16px;
+  letter-spacing: 0.039px;
+  white-space: nowrap;
+  pointer-events: none;
+  box-sizing: border-box;
+  opacity: 0;
+  transform: translateX(-50%);
+  visibility: hidden;
+}
+
+.trae-edit-panel [data-trae-tooltip]::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 5px);
+  z-index: var(--trae-layer-edit-tooltip);
+  width: 8px;
+  height: 4px;
+  background: var(--trae-bg-invert, var(--bg-bg-invert));
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  transform: translateX(-50%);
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+}
+
+.trae-edit-panel [data-trae-tooltip]:hover::after,
+.trae-edit-panel [data-trae-tooltip]:focus-visible::after,
+.trae-edit-panel [data-trae-tooltip]:hover::before,
+.trae-edit-panel [data-trae-tooltip]:focus-visible::before {
+  opacity: 1;
+  visibility: visible;
+}
+
+.trae-comment-btn {
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.trae-comment-btn:disabled {
+  cursor: not-allowed;
+}
+
+.trae-comment-btn:focus-visible {
+  outline: 2px solid var(--trae-status-primary);
+  outline-offset: 1px;
+}
+
+.trae-comment-btn-primary {
+  background: var(--trae-bg-invert);
+  color: var(--trae-text-onaccent);
+}
+
+.trae-comment-btn-primary:hover:not(:disabled) {
+  background: var(--trae-bg-invert-hover);
+}
+
+.trae-comment-btn-primary:active:not(:disabled) {
+  background: var(--trae-bg-invert-active);
+}
+
+.trae-comment-btn-primary:disabled {
+  background: var(--trae-bg-invert-disabled);
+  color: var(--trae-text-disabled);
+}
+
+.trae-comment-btn-secondary {
+  background: var(--trae-bg-overlay-l2);
+  color: var(--trae-text-default);
+}
+
+.trae-comment-btn-secondary:hover:not(:disabled) {
+  background: var(--trae-bg-overlay-l3);
+}
+
+.trae-comment-btn-secondary:active:not(:disabled) {
+  background: var(--trae-bg-overlay-l4);
+}
+
+.trae-comment-btn-secondary:disabled {
+  background: var(--trae-bg-overlay-l2);
+  color: var(--trae-text-disabled);
+}
+
+.trae-comment-btn-text {
+  background: transparent;
+  color: var(--trae-text-default);
+}
+
+.trae-comment-btn-text:hover:not(:disabled) {
+  border-radius: 8px;
+  background: var(--bg-bg-overlay-l1, var(--trae-bg-overlay-l1));
+  color: var(--trae-text-default-hover);
+}
+
+.trae-comment-btn-text:active:not(:disabled) {
+  border-radius: 8px;
+  background: var(--trae-bg-overlay-l2);
+  color: var(--trae-text-default-active);
+}
+
+.trae-comment-btn-text:disabled {
+  background: transparent;
+  color: var(--trae-text-disabled);
+}
+
+.trae-marking-btn {
+  justify-content: center;
+}
+
+.trae-marking-btn:hover:not(:disabled) {
+  background: var(--trae-bg-overlay-l1) !important;
+}
+
+.trae-marking-btn-active {
+  background: var(--bg-bg-brand-disabled, rgba(75, 63, 227, 0.22)) !important;
+  color: var(--icon-icon-brand, var(--trae-icon-brand)) !important;
+}
+
+.trae-marking-btn-active:hover {
+  background: var(--bg-bg-brand-popup, rgba(170, 183, 255, 0.36)) !important;
+  color: var(--icon-icon-brand, var(--trae-icon-brand)) !important;
+}
+
+.trae-marking-btn:active:not(:disabled) {
+  background: var(--trae-bg-overlay-l2) !important;
+}
+
+.trae-marking-btn:disabled {
+  color: var(--trae-text-disabled) !important;
+  cursor: not-allowed !important;
+}
+
+.trae-action-button-shortcut {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  color: var(--trae-icon-secondary);
+  flex-shrink: 0;
+}
+
+.trae-shortcut-container {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.trae-shortcut-key {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 12px;
+  color: var(--trae-icon-secondary);
+}
+
+.trae-add-to-chat-divider {
+  width: 2px;
+  height: 12px;
+  padding: 0 6px;
+  box-sizing: content-box;
+  background-clip: content-box;
+  background-color: var(--trae-border-l2);
+  flex-shrink: 0;
+}
+
+.trae-editor-view {
+  display: flex;
+  flex-direction: column;
+  width: 320px;
+  padding: 8px;
+  background: transparent;
+}
+
+.trae-editor-text-container {
+  display: flex;
+  align-items: center;
+  padding: 8px;
+  background: var(--trae-bg-overlay-l1);
+  border: 1px solid var(--trae-border-l3);
+  border-radius: 4px;
+  gap: 8px;
+}
+
+.trae-editor-textarea {
+  flex: 1;
+  padding: 0 2px;
+  border: none;
+  background: transparent;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 20px;
+  color: var(--trae-text-default);
+  resize: none;
+  outline: none;
+  overflow-y: auto;
+  max-height: 140px;
+}
+
+.trae-editor-textarea::placeholder {
+  color: var(--trae-text-tertiary);
+}
+
+.trae-editor-action-bar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition:
+    max-height 0.2s ease-out,
+    opacity 0.2s ease-out,
+    margin-top 0.2s ease-out;
+}
+
+.trae-editor-action-bar-visible {
+  max-height: 32px;
+  opacity: 1;
+  margin-top: 8px;
+}
+
+.trae-editor-cancel-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 24px;
+  padding: 0 4px;
+  background: var(--trae-bg-overlay-l2);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.trae-editor-cancel-button:hover {
+  background: var(--trae-bg-overlay-l3);
+}
+
+.trae-editor-cancel-button:active {
+  background: var(--trae-bg-overlay-l3);
+}
+
+.trae-editor-cancel-button:focus-visible {
+  outline: 2px solid var(--trae-status-primary);
+  outline-offset: 1px;
+}
+
+.trae-editor-cancel-text {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 16px;
+  color: var(--trae-text-default);
+  white-space: nowrap;
+  padding: 0 4px;
+}
+
+.trae-editor-submit-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 24px;
+  padding: 0 8px;
+  background: var(--trae-bg-invert);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.trae-editor-submit-button:hover {
+  background: var(--trae-bg-invert-hover);
+}
+
+.trae-editor-submit-button:active {
+  background: var(--trae-bg-invert-active);
+}
+
+.trae-editor-submit-button:focus-visible {
+  outline: 2px solid var(--trae-status-primary);
+  outline-offset: 1px;
+}
+
+.trae-editor-submit-text {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 16px;
+  color: var(--trae-text-onaccent);
+  white-space: nowrap;
+  padding: 0 4px;
+}
+
+.trae-editor-submit-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 12px;
+  height: 12px;
+  color: var(--trae-icon-onaccent);
+  flex-shrink: 0;
+}
+
+.trae-success-view {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 12px;
+  height: 32px;
+  white-space: nowrap;
+}
+
+.trae-success-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  color: var(--trae-status-success);
+  flex-shrink: 0;
+}
+
+.trae-success-text {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 18px;
+  color: var(--trae-text-default);
+  user-select: none;
+}
+</style><style data-trae-pptx-captured-css="true">:root { --bg: #f5f0e6; --card-bg: #fffdf8; --primary: #8b5a2b; --primary-light: #c49a6c; --accent: #c0392b; --text: #3a3226; --text-light: #7a6e5d; --border: #d9cdb8; --shadow: 0 2px 12px rgba(139,90,43,0.1); --shadow-hover: 0 6px 24px rgba(139,90,43,0.18); --tag-bg: #f0e8d9; }
+* { margin: 0px; padding: 0px; box-sizing: border-box; }
+body { font-family: "Noto Serif SC", "Songti SC", SimSun, Georgia, serif; background: var(--bg); color: var(--text); line-height: 1.8; min-height: 100vh; }
+header { background: linear-gradient(135deg, rgb(107, 68, 35) 0%, rgb(139, 90, 43) 50%, rgb(160, 112, 60) 100%); color: rgb(245, 240, 230); padding: 60px 20px 50px; text-align: center; position: relative; overflow: hidden; }
+header::before { content: ""; position: absolute; inset: 0px; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Ctext x='10' y='30' font-size='20'%3E書%3C/text%3E%3Ctext x='50' y='70' font-size='20'%3E典%3C/text%3E%3Ctext x='80' y='40' font-size='20'%3E經%3C/text%3E%3C/g%3E%3C/svg%3E"); pointer-events: none; }
+header h1 { font-size: 2.4em; font-weight: 700; letter-spacing: 6px; margin-bottom: 12px; position: relative; }
+header .subtitle { font-size: 1.05em; opacity: 0.85; letter-spacing: 2px; position: relative; }
+header .stats { margin-top: 24px; display: flex; justify-content: center; gap: 40px; flex-wrap: wrap; position: relative; }
+header .stat-item { text-align: center; }
+header .stat-num { font-size: 1.8em; font-weight: 700; color: rgb(240, 217, 160); }
+header .stat-label { font-size: 0.8em; opacity: 0.7; letter-spacing: 1px; }
+.search-bar { max-width: 700px; margin: -25px auto 0px; padding: 0px 20px; position: relative; z-index: 10; }
+.search-bar input { width: 100%; padding: 14px 24px 14px 50px; border: 2px solid var(--border); border-radius: 30px; font-size: 1em; font-family: inherit; background: var(--card-bg); color: var(--text); box-shadow: var(--shadow); outline: none; transition: border-color 0.3s, box-shadow 0.3s; }
+.search-bar input:focus { border-color: var(--primary); box-shadow: var(--shadow-hover); }
+.search-bar .icon { position: absolute; left: 42px; top: 50%; transform: translateY(-50%); font-size: 1.2em; color: var(--text-light); }
+.filter-tags { max-width: 1200px; margin: 24px auto 0px; padding: 0px 20px; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+.filter-tag { padding: 6px 18px; border-radius: 20px; font-size: 0.85em; cursor: pointer; border: 1.5px solid var(--border); background: var(--card-bg); color: var(--text-light); transition: 0.3s; user-select: none; }
+.filter-tag:hover { border-color: var(--primary-light); color: var(--primary); }
+.filter-tag.active { background: var(--primary); color: rgb(255, 255, 255); border-color: var(--primary); }
+main { max-width: 1200px; margin: 0px auto; padding: 40px 20px 60px; }
+.category { margin-bottom: 48px; }
+.category-title { font-size: 1.4em; color: var(--primary); border-bottom: 2px solid var(--border); padding-bottom: 10px; margin-bottom: 24px; display: flex; align-items: center; gap: 10px; }
+.category-title .icon { font-size: 1.1em; }
+.category-title .count { font-size: 0.65em; color: var(--text-light); background: var(--tag-bg); padding: 2px 10px; border-radius: 10px; margin-left: auto; }
+.cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 20px; }
+.card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 24px; box-shadow: var(--shadow); transition: 0.3s; display: flex; flex-direction: column; position: relative; overflow: hidden; }
+.card::before { content: ""; position: absolute; top: 0px; left: 0px; width: 4px; height: 100%; background: var(--primary); opacity: 0; transition: opacity 0.3s; }
+.card:hover { transform: translateY(-3px); box-shadow: var(--shadow-hover); border-color: var(--primary-light); }
+.card:hover::before { opacity: 1; }
+.card-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px; gap: 10px; }
+.card-name { font-size: 1.15em; font-weight: 700; color: var(--text); line-height: 1.4; }
+.card-badges { display: flex; gap: 6px; flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end; }
+.badge { font-size: 0.7em; padding: 2px 8px; border-radius: 10px; white-space: nowrap; }
+.badge-free { background: rgb(232, 245, 233); color: rgb(46, 125, 50); }
+.badge-hot { background: rgb(251, 233, 231); color: rgb(198, 40, 40); }
+.badge-register { background: rgb(255, 243, 224); color: rgb(230, 81, 0); }
+.card-desc { font-size: 0.9em; color: var(--text-light); line-height: 1.7; margin-bottom: 14px; flex-grow: 1; }
+.card-meta { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+.meta-tag { font-size: 0.75em; padding: 3px 10px; background: var(--tag-bg); border-radius: 6px; color: var(--text-light); }
+.card-link { display: inline-flex; align-items: center; gap: 6px; text-decoration: none; color: var(--primary); font-size: 0.9em; font-weight: 600; padding: 8px 0px; border-bottom: 1.5px solid transparent; transition: border-color 0.3s; word-break: break-all; }
+.card-link:hover { border-bottom-color: var(--primary); }
+.card-link .arrow { transition: transform 0.3s; }
+.card-link:hover .arrow { transform: translateX(4px); }
+.no-results { text-align: center; padding: 60px 20px; color: var(--text-light); font-size: 1.1em; display: none; }
+footer { background: rgb(58, 50, 38); color: rgb(176, 166, 144); text-align: center; padding: 30px 20px; font-size: 0.85em; letter-spacing: 1px; }
+footer a { color: var(--primary-light); text-decoration: none; }
+@media (max-width: 600px) {
+  header h1 { font-size: 1.8em; letter-spacing: 3px; }
+  header .stats { gap: 20px; }
+  .cards-grid { grid-template-columns: 1fr; }
+  .card { padding: 18px; }
+}
+@keyframes fadeInUp { 
+  0% { opacity: 0; transform: translateY(15px); }
+  100% { opacity: 1; transform: translateY(0px); }
+}
+.card { animation: 0.5s ease 0s 1 normal forwards running fadeInUp; opacity: 0; }
+.card:nth-child(1) { animation-delay: 0.05s; }
+.card:nth-child(2) { animation-delay: 0.1s; }
+.card:nth-child(3) { animation-delay: 0.15s; }
+.card:nth-child(4) { animation-delay: 0.2s; }
+.card:nth-child(5) { animation-delay: 0.25s; }
+.card:nth-child(6) { animation-delay: 0.3s; }
+:root { --trae-layer-image-download: 89990; --trae-layer-browser-inspect-overlay: 90000; --trae-layer-browser-inspect-highlight: 90010; --trae-layer-browser-inspect-action: 90020; --trae-layer-text-selection-action: 90030; --trae-layer-edit-tooltip: 100095; }
+:root, [data-trae-theme="dark"] { --trae-bg-base-default: #171717; --trae-bg-menu: #222427; --trae-bg-overlay-l1: rgba(255, 255, 255, 0.04); --trae-bg-overlay-l2: rgba(255, 255, 255, 0.08); --trae-bg-overlay-l3: rgba(255, 255, 255, 0.12); --trae-bg-overlay-l4: rgba(255, 255, 255, 0.16); --trae-bg-invert: #f5f9fe; --trae-bg-invert-hover: #e8ecf0; --trae-bg-invert-active: #dce0e4; --trae-bg-invert-disabled: rgba(224, 226, 242, 0.12); --bg-bg-brand-disabled: rgba(75, 63, 227, 0.35); --bg-bg-brand-popup: rgba(106, 111, 255, 0.15); --trae-border-l1: #e0e2f217; --trae-border-l2: rgba(255, 255, 255, 0.12); --trae-border-l3: rgba(255, 255, 255, 0.08); --trae-border-neutral-l3: rgba(229, 229, 229, 0.20); --trae-border-brand: #6a6fff; --trae-text-default: #f5f9fe; --trae-text-default-hover: #f5f9fe; --trae-text-default-active: #f5f9fe; --trae-text-secondary: rgba(245, 249, 254, 0.5); --trae-text-tertiary: rgba(245, 249, 254, 0.4); --trae-text-disabled: #666b75; --trae-text-onaccent: #222427; --trae-icon-default: #f5f9fe; --trae-icon-secondary: rgba(245, 249, 254, 0.5); --trae-icon-brand: #6a6fff; --icon-icon-brand: var(--trae-icon-brand); --trae-icon-onaccent: #222427; --trae-status-success: #22c55e; --trae-status-primary: #3b82f6; --trae-status-primary-default: #387bff; --trae-status-primary-surface-l1: rgba(53, 121, 255, 0.18); --trae-status-success-default: #33c192; --trae-status-success-surface-l1: rgba(0, 165, 110, 0.18); --trae-status-error-default: #f65a5a; --trae-status-error-surface-l1: rgba(246, 70, 70, 0.18); --trae-annotation-marker-bg: #4b3fe3; --trae-annotation-marker-text: #ffffff; --trae-annotation-region-border: var(--trae-status-primary-default); --trae-region-outside-mask-bg: rgba(0, 0, 0, 0.32); --trae-panel-shadow: 0px 6px 24px -1px rgba(0, 0, 0, 0.16); --trae-floating-shadow: 0px 2px 8px 0px rgba(0, 0, 0, 0.2); --trae-shadow-elevation-50: 0 1px 2px -1px rgba(0, 0, 0, 0.45); --text-text-default: var(--trae-text-default); --text-text-onaccent: var(--trae-text-onaccent); --bg-bg-menu: var(--trae-bg-menu); --bg-bg-white: var(--trae-bg-menu); --bg-bg-invert: var(--trae-bg-invert); --bg-bg-invert-disabled: var(--trae-bg-invert-disabled); --bg-bg-overlay-l1: var(--trae-bg-overlay-l1); --bg-bg-overlay-l2: var(--trae-bg-overlay-l2); --bg-bg-overlay-l3: var(--trae-bg-overlay-l3); --border-border-neutral-l1: var(--trae-border-l1); --border-border-brand: var(--trae-border-brand); --border-border-brand-half: rgba(106, 111, 255, 0.4); --status-error-default: var(--trae-status-error-default); --status-error-surface-l1: var(--trae-status-error-surface-l1); --radius-radius-md-12: 12px; --spacers-spacer-0: 0; --spacers-spacer-6: 6px; }
+[data-trae-theme="light"] { --trae-bg-base-default: #fafafa; --trae-bg-menu: #ffffff; --trae-bg-overlay-l1: rgba(0, 0, 0, 0.04); --trae-bg-overlay-l2: rgba(0, 0, 0, 0.06); --trae-bg-overlay-l3: rgba(0, 0, 0, 0.08); --trae-bg-overlay-l4: rgba(0, 0, 0, 0.12); --trae-bg-invert: #1f2328; --trae-bg-invert-hover: #32383f; --trae-bg-invert-active: #444d56; --trae-bg-invert-disabled: rgba(115, 115, 115, 0.20); --bg-bg-brand-disabled: rgba(75, 63, 227, 0.22); --bg-bg-brand-popup: rgba(170, 183, 255, 0.36); --trae-border-l1: rgba(0, 0, 0, 0.1); --trae-border-l2: rgba(0, 0, 0, 0.12); --trae-border-l3: rgba(0, 0, 0, 0.08); --trae-border-neutral-l3: rgba(115, 115, 115, 0.36); --trae-border-brand: #4b3fe3; --trae-text-default: #1f2328; --trae-text-default-hover: #111214; --trae-text-default-active: #111214; --trae-text-secondary: rgba(31, 35, 40, 0.5); --trae-text-tertiary: rgba(31, 35, 40, 0.4); --trae-text-disabled: #a1a1a1; --trae-text-onaccent: #ffffff; --trae-icon-default: #1f2328; --trae-icon-secondary: rgba(31, 35, 40, 0.5); --trae-icon-brand: #4b3fe3; --icon-icon-brand: var(--trae-icon-brand); --trae-icon-onaccent: #ffffff; --trae-status-success: #22c55e; --trae-status-primary: #3b82f6; --trae-status-primary-default: #2f74ff; --trae-status-primary-surface-l1: rgba(47, 116, 255, 0.12); --trae-status-success-default: #15a877; --trae-status-success-surface-l1: rgba(64, 176, 139, 0.12); --trae-status-error-default: #e8463a; --trae-status-error-surface-l1: rgba(232, 70, 58, 0.12); --trae-annotation-marker-bg: #4b3fe3; --trae-annotation-marker-text: #ffffff; --trae-annotation-region-border: var(--trae-status-primary-default); --trae-region-outside-mask-bg: rgba(0, 0, 0, 0.18); --trae-panel-shadow: 0px 6px 24px -1px rgba(24, 24, 24, 0.06); --trae-floating-shadow: 0px 2px 8px 0px rgba(24, 24, 24, 0.2); --trae-shadow-elevation-50: 0 1px 2px -1px rgba(24, 24, 24, 0.08); --text-text-default: var(--trae-text-default); --text-text-onaccent: var(--trae-text-onaccent); --bg-bg-menu: var(--trae-bg-menu); --bg-bg-white: var(--trae-bg-menu); --bg-bg-invert: var(--trae-bg-invert); --bg-bg-invert-disabled: var(--trae-bg-invert-disabled); --bg-bg-overlay-l1: var(--trae-bg-overlay-l1); --bg-bg-overlay-l2: var(--trae-bg-overlay-l2); --bg-bg-overlay-l3: var(--trae-bg-overlay-l3); --border-border-neutral-l1: var(--trae-border-l1); --border-border-brand: var(--trae-border-brand); --border-border-brand-half: rgba(75, 63, 227, 0.4); --status-error-default: var(--trae-status-error-default); --status-error-surface-l1: var(--trae-status-error-surface-l1); --radius-radius-md-12: 12px; --spacers-spacer-0: 0; --spacers-spacer-6: 6px; }
+@keyframes trae-spin { 
+  100% { transform: rotate(360deg); }
+}
+@keyframes trae-edit-bar-enter { 
+  0% { opacity: 0; transform: translateY(-4px) scale(0.98); }
+  100% { opacity: 1; transform: translateY(0px) scale(1); }
+}
+@keyframes trae-edit-bar-leave { 
+  0% { opacity: 1; transform: translateY(0px) scale(1); }
+  100% { opacity: 0; transform: translateY(-4px) scale(0.98); }
+}
+@keyframes trae-edit-panel-leave { 
+  0% { opacity: 1; transform: translateY(0px) scale(1); }
+  100% { opacity: 0; transform: translateY(-4px) scale(0.98); }
+}
+.trae-edit-mode-active:not(.trae-edit-mode-dragging) body :not([data-trae-edit-ui]):not([data-trae-edit-ui] *) { transition: none !important; animation-play-state: paused !important; }
+.trae-edit-mode-reorder-hit-test [data-trae-edit-ui]:not(.trae-edit-pointer-shield):not(.trae-edit-panel), .trae-edit-mode-reorder-hit-test [data-trae-edit-ui]:not(.trae-edit-pointer-shield):not(.trae-edit-panel) * { pointer-events: none !important; }
+.trae-browser-inspect-overlay { position: fixed; top: 0px; left: 0px; width: 100%; height: 100%; z-index: var(--trae-layer-browser-inspect-overlay); pointer-events: auto; background: transparent; }
+.trae-browser-inspect-highlight-box { position: absolute; top: 0px; left: 0px; z-index: var(--trae-layer-browser-inspect-highlight); display: none; }
+.trae-browser-inspect-highlight-tag { position: absolute; left: 0px; top: 0px; height: 18px; padding: 0px 6px; box-sizing: border-box; border-radius: 4px; background-color: var(--trae-status-success-default); color: var(--trae-text-onaccent); font-size: 12px; font-weight: 400; display: none; align-items: center; z-index: var(--trae-layer-browser-inspect-action); }
+.trae-browser-inspect-highlight-box-show { display: flex; }
+.trae-browser-inspect-highlight-tag.trae-browser-inspect-highlight-box-show { display: none; }
+.trae-browser-inspect-select-button.trae-browser-inspect-highlight-box-show { display: block !important; }
+.trae-browser-inspect-select-button { position: absolute; top: 0px; left: 0px; display: none; z-index: var(--trae-layer-browser-inspect-action); }
+.trae-browser-inspect-select-highlight-box { background: transparent !important; }
+.trae-browser-inspect-select-highlight-box .trae-browser-inspect-highlight-tag { background-color: var(--trae-status-success-default); }
+.trae-add-to-chat-card { display: block; overflow: hidden; background: var(--trae-bg-menu); border: 1px solid var(--trae-border-l1); border-radius: 8px; box-shadow: var(--trae-floating-shadow); transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1), height 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
+.trae-add-to-chat-content { position: relative; width: max-content; }
+.trae-fade-exit { opacity: 0; transition: opacity 0.15s ease-out; }
+.trae-fade-enter { opacity: 1; transition: opacity 0.2s ease-in; }
+.trae-buttons-view { display: flex; align-items: center; gap: 6px; padding: 4px; background: transparent; }
+.trae-action-button { display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; background: transparent; border: none; border-radius: 4px; cursor: pointer; transform: none !important; transition: none !important; animation: auto ease 0s 1 normal none running none !important; }
+.trae-action-button:hover { background: var(--trae-bg-overlay-l2); }
+.trae-action-button:active { background: var(--trae-bg-overlay-l3); }
+.trae-action-button:focus-visible { outline: 2px solid var(--trae-status-primary); outline-offset: 1px; }
+.trae-action-button-icon { display: flex; align-items: center; justify-content: center; width: 16px; height: 16px; color: var(--trae-icon-default); flex-shrink: 0; }
+.trae-action-button-title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 11px; font-weight: 500; line-height: 16px; color: var(--trae-text-default); white-space: nowrap; }
+.trae-edit-toolbar-button-active { background: var(--bg-bg-brand-disabled, rgba(75, 63, 227, 0.22)) !important; color: var(--icon-icon-brand, #4b3fe3) !important; font-weight: bold !important; }
+.trae-edit-toolbar-button-active:hover { background: var(--bg-bg-brand-popup, rgba(170, 183, 255, 0.36)) !important; }
+.trae-edit-toolbar button[data-action="alignment-dropdown"]:hover, .trae-edit-toolbar button[data-action="text-align-dropdown"]:hover, .trae-edit-toolbar button[data-action="font-decrease"]:hover, .trae-edit-toolbar button[data-action="font-increase"]:hover, .trae-edit-toolbar button[data-action^="align-"]:hover { border-radius: 8px; background: var(--bg-bg-overlay-l1, rgba(115, 115, 115, 0.08)) !important; }
+.trae-edit-toolbar button[data-action="alignment-dropdown"]:active, .trae-edit-toolbar button[data-action="text-align-dropdown"]:active, .trae-edit-toolbar button[data-action="font-decrease"]:active, .trae-edit-toolbar button[data-action="font-increase"]:active, .trae-edit-toolbar button[data-action^="align-"]:active { border-radius: 8px; background: var(--bg-bg-overlay-l2, rgba(115, 115, 115, 0.12)) !important; }
+.trae-comment-input { background: transparent; color: var(--trae-text-default); caret-color: var(--trae-text-default); }
+.trae-comment-input::placeholder { color: var(--trae-text-tertiary); }
+.trae-point-edit-bar, .trae-point-comment-input-bar, .trae-comment-only-panel { transform-origin: center top; will-change: opacity, transform; }
+.trae-edit-panel:not(.trae-edit-panel-leave) { pointer-events: auto !important; }
+.trae-edit-bar-enter { animation: trae-edit-bar-enter var(--transition-normal, 0.18s cubic-bezier(0.2, 0, 0, 1)) both; }
+.trae-edit-bar-leave { pointer-events: none; animation: trae-edit-bar-leave var(--transition-fast, 0.14s ease) both; }
+.trae-edit-panel-leave { pointer-events: none; animation: trae-edit-panel-leave var(--transition-fast, 0.14s ease) both; }
+.trae-edit-panel [data-trae-tooltip] { position: relative; }
+.trae-edit-panel [data-trae-tooltip]::after { content: attr(data-trae-tooltip); position: absolute; left: 50%; bottom: calc(100% + 8px); z-index: var(--trae-layer-edit-tooltip); padding: 6px 10px; border-radius: 6px; background: var(--trae-bg-invert, var(--bg-bg-invert)); color: var(--trae-text-onaccent, var(--text-text-onaccent)); box-shadow: var(--trae-floating-shadow); font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", sans-serif; font-size: 11px; font-weight: 500; line-height: 16px; letter-spacing: 0.039px; white-space: nowrap; pointer-events: none; box-sizing: border-box; opacity: 0; transform: translateX(-50%); visibility: hidden; }
+.trae-edit-panel [data-trae-tooltip]::before { content: ""; position: absolute; left: 50%; bottom: calc(100% + 5px); z-index: var(--trae-layer-edit-tooltip); width: 8px; height: 4px; background: var(--trae-bg-invert, var(--bg-bg-invert)); clip-path: polygon(0px 0px, 100% 0px, 50% 100%); transform: translateX(-50%); pointer-events: none; opacity: 0; visibility: hidden; }
+.trae-edit-panel [data-trae-tooltip]:hover::after, .trae-edit-panel [data-trae-tooltip]:focus-visible::after, .trae-edit-panel [data-trae-tooltip]:hover::before, .trae-edit-panel [data-trae-tooltip]:focus-visible::before { opacity: 1; visibility: visible; }
+.trae-comment-btn { justify-content: center; cursor: pointer; transition: background-color 0.15s; }
+.trae-comment-btn:disabled { cursor: not-allowed; }
+.trae-comment-btn:focus-visible { outline: 2px solid var(--trae-status-primary); outline-offset: 1px; }
+.trae-comment-btn-primary { background: var(--trae-bg-invert); color: var(--trae-text-onaccent); }
+.trae-comment-btn-primary:hover:not(:disabled) { background: var(--trae-bg-invert-hover); }
+.trae-comment-btn-primary:active:not(:disabled) { background: var(--trae-bg-invert-active); }
+.trae-comment-btn-primary:disabled { background: var(--trae-bg-invert-disabled); color: var(--trae-text-disabled); }
+.trae-comment-btn-secondary { background: var(--trae-bg-overlay-l2); color: var(--trae-text-default); }
+.trae-comment-btn-secondary:hover:not(:disabled) { background: var(--trae-bg-overlay-l3); }
+.trae-comment-btn-secondary:active:not(:disabled) { background: var(--trae-bg-overlay-l4); }
+.trae-comment-btn-secondary:disabled { background: var(--trae-bg-overlay-l2); color: var(--trae-text-disabled); }
+.trae-comment-btn-text { background: transparent; color: var(--trae-text-default); }
+.trae-comment-btn-text:hover:not(:disabled) { border-radius: 8px; background: var(--bg-bg-overlay-l1, var(--trae-bg-overlay-l1)); color: var(--trae-text-default-hover); }
+.trae-comment-btn-text:active:not(:disabled) { border-radius: 8px; background: var(--trae-bg-overlay-l2); color: var(--trae-text-default-active); }
+.trae-comment-btn-text:disabled { background: transparent; color: var(--trae-text-disabled); }
+.trae-marking-btn { justify-content: center; }
+.trae-marking-btn:hover:not(:disabled) { background: var(--trae-bg-overlay-l1) !important; }
+.trae-marking-btn-active { background: var(--bg-bg-brand-disabled, rgba(75, 63, 227, 0.22)) !important; color: var(--icon-icon-brand, var(--trae-icon-brand)) !important; }
+.trae-marking-btn-active:hover { background: var(--bg-bg-brand-popup, rgba(170, 183, 255, 0.36)) !important; color: var(--icon-icon-brand, var(--trae-icon-brand)) !important; }
+.trae-marking-btn:active:not(:disabled) { background: var(--trae-bg-overlay-l2) !important; }
+.trae-marking-btn:disabled { color: var(--trae-text-disabled) !important; cursor: not-allowed !important; }
+.trae-action-button-shortcut { display: flex; align-items: center; gap: 2px; color: var(--trae-icon-secondary); flex-shrink: 0; }
+.trae-shortcut-container { display: flex; align-items: center; gap: 2px; }
+.trae-shortcut-key { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 11px; font-weight: 500; line-height: 12px; color: var(--trae-icon-secondary); }
+.trae-add-to-chat-divider { width: 2px; height: 12px; padding: 0px 6px; box-sizing: content-box; background-clip: content-box; background-color: var(--trae-border-l2); flex-shrink: 0; }
+.trae-editor-view { display: flex; flex-direction: column; width: 320px; padding: 8px; background: transparent; }
+.trae-editor-text-container { display: flex; align-items: center; padding: 8px; background: var(--trae-bg-overlay-l1); border: 1px solid var(--trae-border-l3); border-radius: 4px; gap: 8px; }
+.trae-editor-textarea { flex: 1 1 0%; padding: 0px 2px; border: none; background: transparent; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 13px; font-weight: 400; line-height: 20px; color: var(--trae-text-default); resize: none; outline: none; overflow-y: auto; max-height: 140px; }
+.trae-editor-textarea::placeholder { color: var(--trae-text-tertiary); }
+.trae-editor-action-bar { display: flex; align-items: center; justify-content: flex-end; gap: 4px; max-height: 0px; opacity: 0; overflow: hidden; transition: max-height 0.2s ease-out, opacity 0.2s ease-out, margin-top 0.2s ease-out; }
+.trae-editor-action-bar-visible { max-height: 32px; opacity: 1; margin-top: 8px; }
+.trae-editor-cancel-button { display: flex; align-items: center; justify-content: center; height: 24px; padding: 0px 4px; background: var(--trae-bg-overlay-l2); border: none; border-radius: 4px; cursor: pointer; transition: background-color 0.15s; }
+.trae-editor-cancel-button:hover { background: var(--trae-bg-overlay-l3); }
+.trae-editor-cancel-button:active { background: var(--trae-bg-overlay-l3); }
+.trae-editor-cancel-button:focus-visible { outline: 2px solid var(--trae-status-primary); outline-offset: 1px; }
+.trae-editor-cancel-text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 11px; font-weight: 500; line-height: 16px; color: var(--trae-text-default); white-space: nowrap; padding: 0px 4px; }
+.trae-editor-submit-button { display: flex; align-items: center; justify-content: center; height: 24px; padding: 0px 8px; background: var(--trae-bg-invert); border: none; border-radius: 4px; cursor: pointer; transition: background-color 0.15s; }
+.trae-editor-submit-button:hover { background: var(--trae-bg-invert-hover); }
+.trae-editor-submit-button:active { background: var(--trae-bg-invert-active); }
+.trae-editor-submit-button:focus-visible { outline: 2px solid var(--trae-status-primary); outline-offset: 1px; }
+.trae-editor-submit-text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 11px; font-weight: 500; line-height: 16px; color: var(--trae-text-onaccent); white-space: nowrap; padding: 0px 4px; }
+.trae-editor-submit-icon { display: flex; align-items: center; justify-content: center; width: 12px; height: 12px; color: var(--trae-icon-onaccent); flex-shrink: 0; }
+.trae-success-view { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 0px 12px; height: 32px; white-space: nowrap; }
+.trae-success-icon { display: flex; align-items: center; justify-content: center; width: 16px; height: 16px; color: var(--trae-status-success); flex-shrink: 0; }
+.trae-success-text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 12px; font-weight: 400; line-height: 18px; color: var(--trae-text-default); user-select: none; }</style></head>
+<body>
+
+<header>
+  <h1>免费古籍在线查阅指南</h1>
+  <p class="subtitle">收录国内外主要免费古籍数字资源平台 · 涵盖图书馆、数据库与独立古籍网站</p>
+  <div class="stats">
+    <div class="stat-item">
+      <div class="stat-num">21</div>
+      <div class="stat-label">收录平台</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">6</div>
+      <div class="stat-label">资源类别</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">4</div>
+      <div class="stat-label">国家地区</div>
+    </div>
+  </div>
+</header>
+
+<div class="search-bar">
+  <span class="icon">🔍</span>
+  <input type="text" id="searchInput" placeholder="搜索平台名称、网址或关键词...">
+</div>
+
+<div class="filter-tags">
+  <span class="filter-tag active" data-filter="all">全部</span>
+  <span class="filter-tag" data-filter="national">国家级</span>
+  <span class="filter-tag" data-filter="academic">高校学术</span>
+  <span class="filter-tag" data-filter="independent">独立网站</span>
+  <span class="filter-tag" data-filter="religion">宗教典籍</span>
+  <span class="filter-tag" data-filter="overseas">海外馆藏</span>
+  <span class="filter-tag" data-filter="japan">日本藏</span>
+</div>
+
+<main id="mainContent">
+
+  <!-- ===== 国家级 ===== -->
+  <div class="category" data-category="national">
+    <h2 class="category-title"><span class="icon">🏛️</span> 国家级古籍数字资源库 <span class="count">2</span></h2>
+    <div class="cards-grid">
+      <div class="card" data-keywords="中华古籍资源库 国家图书馆 善本 方志 甲骨文 敦煌">
+        <div class="card-header">
+          <div class="card-name">中华古籍资源库</div>
+          <div class="card-badges"><span class="badge badge-free">免注册</span><span class="badge badge-hot">规模最大</span></div>
+        </div>
+        <p class="card-desc">中国国家图书馆主办，目前规模最大的综合性古籍数字资源平台。总计10.3万部/件、2640万页，含善本、方志、甲骨文、碑帖、敦煌遗书、民族文字古籍等29个专题库，全库统一检索、高清呈现，免注册登录。</p>
+        <div class="card-meta">
+          <span class="meta-tag">10.3万部/件</span>
+          <span class="meta-tag">2640万页</span>
+          <span class="meta-tag">29个专题库</span>
+        </div>
+        <a href="http://read.nlc.cn/thematDataSearch/toGujiIndex" target="_blank" rel="noopener" class="card-link">read.nlc.cn <span class="arrow">→</span></a>
+      </div>
+      <div class="card" data-keywords="中国古籍保护网 国家古籍保护中心 联合发布">
+        <div class="card-header">
+          <div class="card-name">中国古籍保护网</div>
+          <div class="card-badges"><span class="badge badge-free">免费</span></div>
+        </div>
+        <p class="card-desc">国家古籍保护中心运营，整合全国各馆古籍数字资源，联合发布，面向社会免费阅览。持续更新各地图书馆馆藏古籍数字化成果。</p>
+        <div class="card-meta">
+          <span class="meta-tag">全国联合发布</span>
+          <span class="meta-tag">持续更新</span>
+        </div>
+        <a href="https://www.nlc.cn/pcab/zy/szzy/index.shtml" target="_blank" rel="noopener" class="card-link">nlc.cn/pcab <span class="arrow">→</span></a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 高校与学术机构 ===== -->
+  <div class="category" data-category="academic">
+    <h2 class="category-title"><span class="icon">🎓</span> 高校与学术机构平台 <span class="count">3</span></h2>
+    <div class="cards-grid">
+      <div class="card" data-keywords="识典古籍 北京大学 字节跳动 AI 全文检索 图文对照 永乐大典 四库全书">
+        <div class="card-header">
+          <div class="card-name">识典古籍</div>
+          <div class="card-badges"><span class="badge badge-free">免登录</span><span class="badge badge-hot">推荐</span></div>
+        </div>
+        <p class="card-desc">北京大学与字节跳动公益联合推出，已免费公开近7万部古籍。资源来自四部丛刊、四库全书、百衲本二十四史及《永乐大典》等。提供全文检索、图文对照、繁简转换、字典释义、文白对照、古籍AI助手等功能，不限连接数、不限制复制。</p>
+        <div class="card-meta">
+          <span class="meta-tag">近7万部</span>
+          <span class="meta-tag">AI助手</span>
+          <span class="meta-tag">月均240万读者</span>
+        </div>
+        <a href="https://www.shidianguji.com" target="_blank" rel="noopener" class="card-link">shidianguji.com <span class="arrow">→</span></a>
+      </div>
+      <div class="card" data-keywords="籍合网 中华书局 古籍整理">
+        <div class="card-header">
+          <div class="card-name">籍合网</div>
+          <div class="card-badges"><span class="badge badge-free">免费</span></div>
+        </div>
+        <p class="card-desc">中华书局下属公司运营的古籍整理与数字化综合服务平台，整合中华书局多年古籍整理成果，提供在线检索与阅读服务。</p>
+        <div class="card-meta">
+          <span class="meta-tag">中华书局</span>
+          <span class="meta-tag">整理成果</span>
+        </div>
+        <a href="http://www.ancientbooks.cn" target="_blank" rel="noopener" class="card-link">ancientbooks.cn <span class="arrow">→</span></a>
+      </div>
+      <div class="card" data-keywords="复旦大学 图书馆 古籍 线装">
+        <div class="card-header">
+          <div class="card-name">复旦大学图书馆古籍数字化</div>
+          <div class="card-badges"><span class="badge badge-free">免费</span></div>
+        </div>
+        <p class="card-desc">复旦大学图书馆馆藏线装古籍40万册，其中抄本、稿本近3000种。已遴选千余种进行数字化加工，第一期在线开放200种全文图像。</p>
+        <div class="card-meta">
+          <span class="meta-tag">40万册线装</span>
+          <span class="meta-tag">200种全文图像</span>
+        </div>
+        <a href="https://www.library.fudan.edu.cn" target="_blank" rel="noopener" class="card-link">library.fudan.edu.cn <span class="arrow">→</span></a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 独立古籍网站 ===== -->
+  <div class="category" data-category="independent">
+    <h2 class="category-title"><span class="icon">📖</span> 独立古籍网站 <span class="count">7</span></h2>
+    <div class="cards-grid">
+      <div class="card" data-keywords="CText 中国哲学书电子化计划 Donald Sturgeon 全文检索 中英文 先秦 清代">
+        <div class="card-header">
+          <div class="card-name">中国哲学书电子化计划（CText）</div>
+          <div class="card-badges"><span class="badge badge-free">完全免费</span><span class="badge badge-hot">全文检索</span></div>
+        </div>
+        <p class="card-desc">由 Donald Sturgeon 创建，规模最大的免费古籍全文数据库之一，涵盖先秦至清代数千种典籍，支持中英文界面与全文检索，是国际学界使用最广的古籍平台之一。</p>
+        <div class="card-meta">
+          <span class="meta-tag">数千种</span>
+          <span class="meta-tag">中英双语</span>
+          <span class="meta-tag">全文检索</span>
+        </div>
+        <a href="https://ctext.org" target="_blank" rel="noopener" class="card-link">ctext.org <span class="arrow">→</span></a>
+      </div>
+      <div class="card" data-keywords="书格 shuge 高清彩图 善本 公共版权">
+        <div class="card-header">
+          <div class="card-name">书格</div>
+          <div class="card-badges"><span class="badge badge-free">完全免费</span><span class="badge badge-hot">高清彩图</span></div>
+        </div>
+        <p class="card-desc">自由开放的数字图书馆，专注于公共版权领域的古籍善本，以高清彩图著称，品质极高。资源来自全球各大图书馆的开放数字化藏品，是古籍善本图像质量最高的平台之一。</p>
+        <div class="card-meta">
+          <span class="meta-tag">高清彩图</span>
+          <span class="meta-tag">公共版权</span>
+          <span class="meta-tag">全球藏品</span>
+        </div>
+        <a href="https://shuge.org" target="_blank" rel="noopener" class="card-link">shuge.org <span class="arrow">→</span></a>
+      </div>
+      <div class="card" data-keywords="国学导航 经史子集 明清小说">
+        <div class="card-header">
+          <div class="card-name">国学导航</div>
+          <div class="card-badges"><span class="badge badge-free">免费</span></div>
+        </div>
+        <p class="card-desc">分经、史、子、集、新著、专题六部分，收录众多明清小说等通俗文献，适合查阅传统国学经典与通俗文学作品。</p>
+        <div class="card-meta">
+          <span class="meta-tag">经史子集</span>
+          <span class="meta-tag">明清小说</span>
+        </div>
+        <a href="http://www.guoxue123.com" target="_blank" rel="noopener" class="card-link">guoxue123.com <span class="arrow">→</span></a>
+      </div>
+      <div class="card" data-keywords="国学大师 gxdq 书目检索 哈佛燕京">
+        <div class="card-header">
+          <div class="card-name">国学大师网</div>
+          <div class="card-badges"><span class="badge badge-free">免费</span></div>
+        </div>
+        <p class="card-desc">收录上百万种古籍文献，提供书目检索功能，可定位古籍在各大图书馆的馆藏位置。集成哈佛燕京馆藏古籍检索器，可直达哈佛网站下载。</p>
+        <div class="card-meta">
+          <span class="meta-tag">百万种</span>
+          <span class="meta-tag">书目检索</span>
+          <span class="meta-tag">哈佛集成</span>
+        </div>
+        <a href="http://www.gxdq.com" target="_blank" rel="noopener" class="card-link">gxdq.com <span class="arrow">→</span></a>
+      </div>
+      <div class="card" data-keywords="搜韵 sou-yun 诗词 诗话 词话 总集 别集">
+        <div class="card-header">
+          <div class="card-name">搜韵</div>
+          <div class="card-badges"><span class="badge badge-free">免费</span></div>
+        </div>
+        <p class="card-desc">诗词类古籍门户网站，收录大量历代诗词总集、别集及诗话词话著作，适合查阅文学类古籍，同时提供诗词创作工具与典故检索。</p>
+        <div class="card-meta">
+          <span class="meta-tag">诗词专精</span>
+          <span class="meta-tag">典故检索</span>
+        </div>
+        <a href="https://sou-yun.cn" target="_blank" rel="noopener" class="card-link">sou-yun.cn <span class="arrow">→</span></a>
+      </div>
+      <div class="card" data-keywords="古籍馆 gujiguan 民国 汉籍">
+        <div class="card-header">
+          <div class="card-name">古籍馆</div>
+          <div class="card-badges"><span class="badge badge-register">注册免费</span></div>
+        </div>
+        <p class="card-desc">收录1949年以前传世古籍文献及部分民国图书，来源涵盖大陆、港澳台及域外汉籍，注册后可免费在线阅读。</p>
+        <div class="card-meta">
+          <span class="meta-tag">1949年前</span>
+          <span class="meta-tag">域外汉籍</span>
+        </div>
+        <a href="http://gujiguan.com" target="_blank" rel="noopener" class="card-link">gujiguan.com <span class="arrow">→</span></a>
+      </div>
+      <div class="card" data-keywords="鼎秀古籍 ding-xiu 全文检索">
+        <div class="card-header">
+          <div class="card-name">鼎秀古籍全文检索平台</div>
+          <div class="card-badges"><span class="badge badge-free">免费试用</span></div>
+        </div>
+        <p class="card-desc">提供古籍全文检索服务，部分功能无需注册即可免费试用，支持PC端浏览器直接访问。</p>
+        <div class="card-meta">
+          <span class="meta-tag">全文检索</span>
+          <span class="meta-tag">免注册试用</span>
+        </div>
+        <a href="http://www.ding-xiu.com" target="_blank" rel="noopener" class="card-link">ding-xiu.com <span class="arrow">→</span></a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 佛典与宗教 ===== -->
+  <div class="category" data-category="religion">
+    <h2 class="category-title"><span class="icon">☸️</span> 佛典与宗教古籍数据库 <span class="count">2</span></h2>
+    <div class="cards-grid">
+      <div class="card" data-keywords="CBETA 中华电子佛典协会 大正藏 卍续藏 佛经 下载">
+        <div class="card-header">
+          <div class="card-name">CBETA 中华电子佛典协会</div>
+          <div class="card-badges"><span class="badge badge-free">完全免费</span><span class="badge badge-hot">佛典最全</span></div>
+        </div>
+        <p class="card-desc">最丰富的汉文电子大藏经，涵盖大正藏、卍续藏等，支持线上阅读和离线下载（HTML/TXT/EPUB/PDF等多种格式），资料库及阅藏系统完全可免费下载。</p>
+        <div class="card-meta">
+          <span class="meta-tag">大正藏</span>
+          <span class="meta-tag">卍续藏</span>
+          <span class="meta-tag">多格式下载</span>
+        </div>
+        <a href="https://cbeta.org" target="_blank" rel="noopener" class="card-link">cbeta.org <span class="arrow">→</span></a>
+      </div>
+      <div class="card" data-keywords="Kanseki Repository Kanripo 汉籍文库 京都大学 Christian Wittern">
+        <div class="card-header">
+          <div class="card-name">Kanseki Repository（汉籍文库）</div>
+          <div class="card-badges"><span class="badge badge-free">开放获取</span></div>
+        </div>
+        <p class="card-desc">由京都大学 Christian Wittern 主持，收录约9,500种古籍文本，完全开放获取，是国际学界维护的重要古籍全文数据库。</p>
+        <div class="card-meta">
+          <span class="meta-tag">约9,500种</span>
+          <span class="meta-tag">京都大学</span>
+          <span class="meta-tag">开放获取</span>
+        </div>
+        <a href="https://www.kanripo.org" target="_blank" rel="noopener" class="card-link">kanripo.org <span class="arrow">→</span></a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 海外图书馆 ===== -->
+  <div class="category" data-category="overseas">
+    <h2 class="category-title"><span class="icon">🌍</span> 海外图书馆与数据库 <span class="count">3</span></h2>
+    <div class="cards-grid">
+      <div class="card" data-keywords="哈佛燕京 Harvard Yenching 善本 13世纪 19世纪">
+        <div class="card-header">
+          <div class="card-name">哈佛燕京图书馆中文善本特藏</div>
+          <div class="card-badges"><span class="badge badge-free">开放获取</span></div>
+        </div>
+        <p class="card-desc">收录13至19世纪中文善本，涵盖经史子集、丛刊及稿钞本，已全部数字化并在线开放，是海外最大的中文善本收藏之一。</p>
+        <div class="card-meta">
+          <span class="meta-tag">13-19世纪</span>
+          <span class="meta-tag">海外最大</span>
+        </div>
+        <a href="https://curiosity.lib.harvard.edu/chinese-rare-books" target="_blank" rel="noopener" class="card-link">curiosity.lib.harvard.edu <span class="arrow">→</span></a>
+      </div>
+      <div class="card" data-keywords="中国善本古籍国际数字化 蒋经国 国会图书馆 普林斯顿 中研院">
+        <div class="card-header">
+          <div class="card-name">中国善本古籍国际数字化项目</div>
+          <div class="card-badges"><span class="badge badge-free">开放获取</span></div>
+        </div>
+        <p class="card-desc">由蒋经国国际学术交流基金会赞助，整合美国国会图书馆、普林斯顿大学葛思德东亚图书馆、哈佛燕京图书馆、台湾中研院史语所傅斯年图书馆四家藏品，各馆约100种善本，开放获取。</p>
+        <div class="card-meta">
+          <span class="meta-tag">四馆联合</span>
+          <span class="meta-tag">约400种善本</span>
+        </div>
+        <a href="https://mapping-project.org/resources/1058/" target="_blank" rel="noopener" class="card-link">mapping-project.org <span class="arrow">→</span></a>
+      </div>
+      <div class="card" data-keywords="Gallica 法国国家图书馆 BnF 敦煌 写本 Smith-Lesouef">
+        <div class="card-header">
+          <div class="card-name">Gallica（法国国家图书馆）</div>
+          <div class="card-badges"><span class="badge badge-free">完全免费</span></div>
+        </div>
+        <p class="card-desc">法国国家图书馆数字图书馆，自1997年起提供免费开放获取，收录数百万份数字化文献，含中文古籍（敦煌写本、Smith-Lesouëf中文馆藏等）。</p>
+        <div class="card-meta">
+          <span class="meta-tag">数百万份</span>
+          <span class="meta-tag">敦煌写本</span>
+          <span class="meta-tag">自1997年</span>
+        </div>
+        <a href="https://gallica.bnf.fr" target="_blank" rel="noopener" class="card-link">gallica.bnf.fr <span class="arrow">→</span></a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 日本藏 ===== -->
+  <div class="category" data-category="japan">
+    <h2 class="category-title"><span class="icon">🏯</span> 日本藏中国古籍数据库 <span class="count">3</span></h2>
+    <div class="cards-grid">
+      <div class="card" data-keywords="东京大学 东洋文化研究所 汉籍 4000 大木 长泽 仓石">
+        <div class="card-header">
+          <div class="card-name">东大东洋文化研究所汉籍数据库</div>
+          <div class="card-badges"><span class="badge badge-free">免费</span></div>
+        </div>
+        <p class="card-desc">东京大学东洋文化研究所收藏中文古籍4,000余种，含大木幹一、长泽规矩也、仓石武四郎等特色个人收藏。已数字化并无偿提供给中国国家图书馆，在国图网站面向读者免费服务。</p>
+        <div class="card-meta">
+          <span class="meta-tag">4,000余种</span>
+          <span class="meta-tag">无偿提供</span>
+          <span class="meta-tag">国图可查</span>
+        </div>
+        <a href="https://www.ioc.u-tokyo.ac.jp/~library/link/link_gb.html" target="_blank" rel="noopener" class="card-link">ioc.u-tokyo.ac.jp <span class="arrow">→</span></a>
+      </div>
+      <div class="card" data-keywords="日本国立国会图书馆 NDL 古典籍 贵重书 汉籍">
+        <div class="card-header">
+          <div class="card-name">日本国立国会图书馆古典籍资料</div>
+          <div class="card-badges"><span class="badge badge-free">免费</span></div>
+        </div>
+        <p class="card-desc">收录大量汉籍善本及贵重书，提供数字化在线阅览，是日本最大的汉籍收藏机构之一。</p>
+        <div class="card-meta">
+          <span class="meta-tag">汉籍善本</span>
+          <span class="meta-tag">贵重书</span>
+        </div>
+        <a href="https://www.ndl.go.jp" target="_blank" rel="noopener" class="card-link">ndl.go.jp <span class="arrow">→</span></a>
+      </div>
+      <div class="card" data-keywords="东洋文化研究所 亚洲古籍 电子图书馆 全文影像">
+        <div class="card-header">
+          <div class="card-name">东洋文化研究所亚洲古籍电子图书馆</div>
+          <div class="card-badges"><span class="badge badge-free">免费</span></div>
+        </div>
+        <p class="card-desc">东京大学东洋文化研究所运营，提供亚洲古籍全文影像在线阅读，含汉籍目录数据库与双红堂文库全文影像数据库。</p>
+        <div class="card-meta">
+          <span class="meta-tag">全文影像</span>
+          <span class="meta-tag">汉籍目录</span>
+          <span class="meta-tag">双红堂文库</span>
+        </div>
+        <a href="https://www.ioc.u-tokyo.ac.jp/~library/link/link_gb.html" target="_blank" rel="noopener" class="card-link">ioc.u-tokyo.ac.jp <span class="arrow">→</span></a>
+      </div>
+    </div>
+  </div>
+
+  <div class="no-results" id="noResults">
+    未找到匹配的平台，请尝试其他关键词。
+  </div>
+
+</main>
+
+<footer>
+  <p>免费古籍在线查阅指南 · 共收录21个平台 · 数据整理截至2026年9月</p>
+  <p style="margin-top:6px;">建议优先使用：中华古籍资源库（规模最大）→ 识典古籍（体验最佳）→ CText（全文检索最强）→ 书格（善本图像最优）</p>
+</footer>
+
+<script>
+  const searchInput = document.getElementById('searchInput');
+  const filterTags = document.querySelectorAll('.filter-tag');
+  const cards = document.querySelectorAll('.card');
+  const categories = document.querySelectorAll('.category');
+  const noResults = document.getElementById('noResults');
+  let currentFilter = 'all';
+
+  function applyFilter() {
+    const query = searchInput.value.trim().toLowerCase();
+    let visibleCount = 0;
+
+    categories.forEach(cat => {
+      const catName = cat.getAttribute('data-category');
+      const categoryCards = cat.querySelectorAll('.card');
+      let catVisible = 0;
+
+      categoryCards.forEach(card => {
+        const name = card.querySelector('.card-name').textContent.toLowerCase();
+        const desc = card.querySelector('.card-desc').textContent.toLowerCase();
+        const keywords = card.getAttribute('data-keywords') || '';
+        const link = card.querySelector('.card-link').textContent.toLowerCase();
+        const matchSearch = !query || name.includes(query) || desc.includes(query) || keywords.toLowerCase().includes(query) || link.includes(query);
+        const matchFilter = currentFilter === 'all' || catName === currentFilter;
+
+        if (matchSearch && matchFilter) {
+          card.style.display = '';
+          catVisible++;
+          visibleCount++;
+        } else {
+          card.style.display = 'none';
+        }
+      });
+
+      // Hide category if no cards visible
+      cat.style.display = catVisible > 0 ? '' : 'none';
+    });
+
+    noResults.style.display = visibleCount > 0 ? 'none' : 'block';
+  }
+
+  searchInput.addEventListener('input', applyFilter);
+
+  filterTags.forEach(tag => {
+    tag.addEventListener('click', () => {
+      filterTags.forEach(t => t.classList.remove('active'));
+      tag.classList.add('active');
+      currentFilter = tag.getAttribute('data-filter');
+      applyFilter();
+    });
+  });
+</script>
+
+
+
+<div data-trae-edit-ui="true" class="trae-image-download-btn" title="Download image" style="position: fixed; display: none; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 6px; background: var(--trae-bg-menu, #222427); border: 1px solid var(--trae-border-l2, rgba(255,255,255,0.12)); box-shadow: var(--trae-floating-shadow, 0px 2px 8px 0px rgba(0,0,0,0.2)); color: var(--trae-icon-default, #f5f9fe); cursor: pointer; z-index: 89990; transition: background 0.15s; pointer-events: auto;"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M8 2v8m0 0L5 7m3 3l3-3M3 12h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+    </svg></div></body></html>
